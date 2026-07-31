@@ -47,8 +47,19 @@
       # Replaces tkg-toolkit's reflash.sh, which clears the screen and waits on a
       # keypress. The loader's own -w flag blocks until the bootloader enumerates,
       # so plugging in the keyboard after starting this is fine.
+      # tkg.io is gone, so keymap.eep can only be hand-edited now. An edit that
+      # leaves the checksum stale is worse than none: the firmware discards the
+      # keymap and rewrites EEPROM with its compiled-in default. Verify before
+      # writing rather than discovering it on the keyboard.
+      eep = pkgs.writeShellApplication {
+        name = "eep";
+        runtimeInputs = [ pkgs.python3 ];
+        text = ''exec python3 ${./tools/eep.py} "$@"'';
+      };
+
       flash = pkgs.writeShellApplication {
         name = "flash";
+        runtimeInputs = [ eep ];
         text = ''
           loader=${hid-bootloader-cli}/bin/hid_bootloader_cli
 
@@ -71,6 +82,7 @@
           case "$target" in
             *.eep)
               mode="KEYMAP mode — hold ONLY the rightmost key of the top row on the LEFT half"
+              eep "$target"
               ;;
             *.hex)
               mode="FIRMWARE mode — hold the TWO rightmost keys of the top row on the LEFT half"
