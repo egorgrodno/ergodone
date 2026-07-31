@@ -1,0 +1,7 @@
+# Intel HEX images ship with CRLF and are fed to the flasher verbatim.
+# Never let git normalise them.
+keymap.eep        -text
+vendor/ergodone.hex -text
+
+vendor/hid_bootloader_cli binary
+*.png                     binary
